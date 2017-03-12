@@ -1,0 +1,130 @@
+<html>
+<head>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<div id="floating-panel">
+<b>Start: </b>
+<input type="text" id="start" value="1265 E University Dr">
+<b>End: </b>
+<input type="text" id="end" value="South Mill Avenue Tempe AZ">
+<button id="directionsButton">Get Directions</button>
+</div>
+<div id="map"></div>
+<!-- Replace the value of the key parameter with your own API key. -->
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFdUG10fIlnCyW2mY01jhVPlpi_u4YSuc&callback=initMap">
+</script>
+<script>
+// This example creates a 2-pixel-wide red polyline showing the path of William
+// Kingsford Smith's first trans-Pacific flight between Oakland, CA, and
+// Brisbane, Australia.
+
+function initMap() {
+  // directionsDisplay = new google.maps.DirectionsRenderer();
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 3,
+    center: {lat: 33.4255, lng: -111.9400},
+    mapTypeId: 'terrain'
+  });
+  var url = 'https://maps.googleapis.com/maps/api/directions/json?sensor=false&units=metric&alternatives=true&mode=bicycling';
+var start = String(document.getElementById('start'));
+var end = String(document.getElementById('end'));
+var obj;
+
+var onClickHandler = function() {
+fetch(url+"&origin="+String(document.getElementById('start').value)+"&destination="+String(document.getElementById('end').value))
+.then((resp) => resp.json())
+.then(function(data) {
+    route0=decode(data.routes[0].overview_polyline.points);
+    route1=decode(data.routes[1].overview_polyline.points);
+    route2=decode(data.routes[2].overview_polyline.points);
+
+    var marker = new google.maps.Marker({
+          position: route0[0],
+          map: map,
+          title: 'Origin'
+        });
+    var marker = new google.maps.Marker({
+          position: route0[route0.length-1],
+          map: map,
+          title: 'Destination'
+        });
+    // directionsDisplay.setDirections(data.routes[0]);
+    flightPath = new google.maps.Polyline({
+          path: route0,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+    flightPath.setMap(map);
+    // var newPos = new google.maps.LatLng(latlongParts[0], latlongParts[1])
+    var index = (route0.length/2).toFixed(0);
+    var newPos = new google.maps.LatLng(route0[index]);
+    flightPath = new google.maps.Polyline({
+          path: route1,
+          strokeColor: '#00FF00',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+    flightPath.setMap(map);
+    // var newPos = new google.maps.LatLng(latlongParts[0], latlongParts[1])
+    flightPath = new google.maps.Polyline({
+          path: route2,
+          strokeColor: '#0000FF',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+    flightPath.setMap(map);
+    // var newPos = new google.maps.LatLng(latlongParts[0], latlongParts[1])
+    var index = (route0.length/2).toFixed(0);
+    var newPos = new google.maps.LatLng(route0[index]);
+    var index = (route0.length/2).toFixed(0);
+    var newPos = new google.maps.LatLng(route0[index]);
+    map.setOptions({
+       center: newPos,
+       zoom: 14
+   });
+    console.log(route0);
+    console.log(route1);
+    console.log(route2);
+    })
+  .catch(function(error) {
+    console.log(error)
+  });
+  };
+document.getElementById('directionsButton').addEventListener('click', onClickHandler);
+}
+
+function decode(encoded){
+    var points=[ ]
+    var index = 0, len = encoded.length;
+    var lat = 0, lng = 0;
+    while (index < len) {
+        var b, shift = 0, result = 0;
+        do {
+
+   b = encoded.charAt(index++).charCodeAt(0) - 63;//finds ascii                                                                                    //and substract it by 63
+              result |= (b & 0x1f) << shift;
+              shift += 5;
+             } while (b >= 0x20);
+
+
+      var dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+       lat += dlat;
+      shift = 0;
+      result = 0;
+     do {
+        b = encoded.charAt(index++).charCodeAt(0) - 63;
+        result |= (b & 0x1f) << shift;
+       shift += 5;
+         } while (b >= 0x20);
+     var dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+     lng += dlng;
+
+  points.push({lat:( lat / 1E5),lng:( lng / 1E5)});
+  }
+  return points
+    }
+</script>
+
+</html>
